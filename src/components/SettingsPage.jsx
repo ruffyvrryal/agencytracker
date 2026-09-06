@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Trash2, Plus } from 'lucide-react'
+import ShareAgencyPanel from './ShareAgencyPanel.jsx'
 
-export default function SettingsPage({ settings, updateSettings, members, addMember, updateMember, deleteMember }) {
+export default function SettingsPage({ settings, updateSettings, members, addMember, updateMember, deleteMember, agencyId }) {
   const [studioName, setStudioName] = useState(settings?.studio_name || '')
   const [displayCurrency, setDisplayCurrency] = useState(settings?.display_currency || 'IDR')
   const [rates, setRates] = useState(settings?.rates || {})
@@ -46,6 +47,8 @@ export default function SettingsPage({ settings, updateSettings, members, addMem
   return (
     <div className="space-y-6 max-w-xl">
       <h1 className="text-2xl font-extrabold">Settings</h1>
+
+      <ShareAgencyPanel agencyId={agencyId} />
 
       <section className="bg-white rounded-xl p-6 shadow-sm space-y-4">
         <h2 className="font-bold">Studio</h2>

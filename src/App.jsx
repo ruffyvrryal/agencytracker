@@ -76,7 +76,7 @@ function Dashboard({ agencyId, page, setPage, onSwitchAgency }) {
             <p className="text-sm mt-1">{data.error}</p>
           </div>
         ) : (
-          <Page {...data} />
+          <Page {...data} agencyId={agencyId} />
         )}
       </main>
     </div>
