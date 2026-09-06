@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-ink/15 px-3 py-2 text-sm bg-white;
+  }
+}
+
+:root {
+  --color-paper: #F2F2F2;
+  --color-forest: #689D4B;
+  --color-sage: #91AE6E;
+  --color-clay: #D96868;
+  --color-ink: #2B2B2B;
+}
+
+body {
+  color: var(--color-ink);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Visible keyboard focus for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
