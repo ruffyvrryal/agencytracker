@@ -25,5 +25,23 @@ export function useAgencies() {
     return { id: data, error }
   }
 
-  return { agencies, loading, refresh, createAgency }
+  const renameAgency = async (id, newName) => {
+    const { error } = await supabase.rpc('rename_agency', {
+      target_agency_id: id,
+      new_name: newName,
+    })
+    if (!error) await refresh()
+    return { error }
+  }
+
+  const deleteAgency = async (id, password) => {
+    const { error } = await supabase.rpc('delete_agency', {
+      target_agency_id: id,
+      agency_password: password,
+    })
+    if (!error) await refresh()
+    return { error }
+  }
+
+  return { agencies, loading, refresh, createAgency, renameAgency, deleteAgency }
 }

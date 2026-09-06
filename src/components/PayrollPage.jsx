@@ -3,7 +3,17 @@ import PayoutForm from './PayoutForm.jsx'
 import PayoutHistory from './PayoutHistory.jsx'
 import { computeBalance } from '../lib/calculations.js'
 
-export default function PayrollPage({ projects, expenses, payouts, payoutLines, members, settings, recordPayout }) {
+export default function PayrollPage({
+  projects,
+  expenses,
+  payouts,
+  payoutLines,
+  members,
+  settings,
+  recordPayout,
+  updatePayout,
+  deletePayout,
+}) {
   const currency = settings?.display_currency || 'IDR'
   const rates = settings?.rates || {}
   const balance = computeBalance(projects, expenses, payouts)
@@ -22,7 +32,15 @@ export default function PayrollPage({ projects, expenses, payouts, payoutLines, 
         onPay={(lines) => recordPayout(lines, balance)}
       />
 
-      <PayoutHistory payouts={payouts} payoutLines={payoutLines} members={members} currency={currency} rates={rates} />
+      <PayoutHistory
+        payouts={payouts}
+        payoutLines={payoutLines}
+        members={members}
+        currency={currency}
+        rates={rates}
+        updatePayout={updatePayout}
+        deletePayout={deletePayout}
+      />
     </div>
   )
 }

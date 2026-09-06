@@ -175,6 +175,36 @@ export function useAgencyData(agencyId) {
     await loadAll()
   }
 
+  // Overwrite an existing payout's lines (percent + amount per member) and
+  // recompute its total from those lines. Used to fix a payout entered by
+  // mistake, without deleting and re-creating it.
+  async function updatePayout(payoutId, lines) {
+    // lines: [{ id, member_id, percent, amount }]
+    const totalAmount = lines.reduce((s, l) => s + Number(l.amount || 0), 0)
+
+    const { error: totalError } = await supabase
+      .from('payouts')
+      .update({ total_amount: totalAmount })
+      .eq('id', payoutId)
+    if (totalError) throw totalError
+
+    for (const l of lines) {
+      const { error } = await supabase
+        .from('payout_lines')
+        .update({ percent: l.percent, amount: l.amount })
+        .eq('id', l.id)
+      if (error) throw error
+    }
+
+    await loadAll()
+  }
+
+  async function deletePayout(id) {
+    const { error } = await supabase.from('payouts').delete().eq('id', id)
+    if (error) throw error
+    await loadAll()
+  }
+
   return {
     ...state,
     loading,
@@ -192,5 +222,7 @@ export function useAgencyData(agencyId) {
     deleteMember,
     updateSettings,
     recordPayout,
+    updatePayout,
+    deletePayout,
   }
 }
