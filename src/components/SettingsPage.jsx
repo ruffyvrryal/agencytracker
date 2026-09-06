@@ -11,11 +11,14 @@ export default function SettingsPage({ settings, updateSettings, members, addMem
   const [newMemberName, setNewMemberName] = useState('')
   const [newMemberRole, setNewMemberRole] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   async function saveGeneral() {
     setSaving(true)
     try {
       await updateSettings({ studio_name: studioName, display_currency: displayCurrency, rates })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1500)
     } finally {
       setSaving(false)
     }
@@ -45,83 +48,117 @@ export default function SettingsPage({ settings, updateSettings, members, addMem
   }
 
   return (
-    <div className="space-y-6 max-w-xl">
-      <h1 className="text-2xl font-extrabold">Settings</h1>
+    <div className="space-y-4 sm:space-y-6 max-w-xl">
+      <h1 className="text-xl sm:text-2xl font-extrabold">Settings</h1>
 
       <ShareAgencyPanel agencyId={agencyId} />
 
-      <section className="bg-white rounded-xl p-6 shadow-sm space-y-4">
-        <h2 className="font-bold">Studio</h2>
-        <label className="block">
-          <span className="block text-sm font-medium text-ink/70 mb-1">Studio name</span>
-          <input className="input" value={studioName} onChange={(e) => setStudioName(e.target.value)} />
-        </label>
-
-        <label className="block">
-          <span className="block text-sm font-medium text-ink/70 mb-1">Display currency</span>
-          <input className="input" value={displayCurrency} onChange={(e) => setDisplayCurrency(e.target.value.toUpperCase())} />
-        </label>
-
-        <div>
-          <span className="block text-sm font-medium text-ink/70 mb-1">Exchange rates (IDR per 1 unit)</span>
-          <ul className="space-y-1 mb-2">
-            {Object.entries(rates).map(([code, value]) => (
-              <li key={code} className="flex items-center gap-2 text-sm">
-                <span className="w-16 font-medium">{code}</span>
-                <span className="flex-1">Rp {Number(value).toLocaleString('en-US')}</span>
-                <button onClick={() => removeRate(code)} className="text-ink/40 hover:text-clay">
-                  <Trash2 size={14} />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="flex gap-2">
-            <input placeholder="USD" className="input w-20" value={newRateCode} onChange={(e) => setNewRateCode(e.target.value)} />
-            <input placeholder="15800" type="number" className="input flex-1" value={newRateValue} onChange={(e) => setNewRateValue(e.target.value)} />
-            <button onClick={addRate} className="bg-ink/5 hover:bg-ink/10 rounded-lg px-3">
-              <Plus size={16} />
-            </button>
-          </div>
+      <section className="card">
+        <div className="px-4 py-3.5 sm:px-6 sm:py-4 border-b border-ink/10">
+          <h2 className="font-bold">Studio</h2>
         </div>
+        <div className="p-4 sm:p-6 space-y-4">
+          <label className="block">
+            <span className="block text-sm font-medium text-ink/70 mb-1">Studio name</span>
+            <input className="input" value={studioName} onChange={(e) => setStudioName(e.target.value)} />
+          </label>
 
-        <button
-          onClick={saveGeneral}
-          disabled={saving}
-          className="bg-forest text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-        >
-          Save
-        </button>
+          <label className="block">
+            <span className="block text-sm font-medium text-ink/70 mb-1">Display currency</span>
+            <input
+              className="input"
+              value={displayCurrency}
+              onChange={(e) => setDisplayCurrency(e.target.value.toUpperCase())}
+            />
+          </label>
+
+          <div>
+            <span className="block text-sm font-medium text-ink/70 mb-1">Exchange rates (IDR per 1 unit)</span>
+            {Object.keys(rates).length > 0 && (
+              <ul className="divide-y divide-ink/10 mb-2">
+                {Object.entries(rates).map(([code, value]) => (
+                  <li key={code} className="flex items-center gap-2 text-sm py-1.5">
+                    <span className="w-16 font-medium">{code}</span>
+                    <span className="flex-1">Rp {Number(value).toLocaleString('en-US')}</span>
+                    <button onClick={() => removeRate(code)} className="icon-btn hover:text-clay hover:bg-clay/10">
+                      <Trash2 size={14} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex gap-2">
+              <input
+                placeholder="USD"
+                className="input w-20 shrink-0"
+                value={newRateCode}
+                onChange={(e) => setNewRateCode(e.target.value)}
+              />
+              <input
+                placeholder="15800"
+                type="number"
+                className="input flex-1 min-w-0"
+                value={newRateValue}
+                onChange={(e) => setNewRateValue(e.target.value)}
+              />
+              <button onClick={addRate} className="btn-outline shrink-0 px-3">
+                <Plus size={16} />
+              </button>
+            </div>
+          </div>
+
+          <button onClick={saveGeneral} disabled={saving} className="btn-primary">
+            {saving ? 'Saving...' : saved ? 'Saved' : 'Save'}
+          </button>
+        </div>
       </section>
 
-      <section className="bg-white rounded-xl p-6 shadow-sm space-y-4">
-        <h2 className="font-bold">Team members</h2>
-        <ul className="divide-y divide-ink/10">
-          {members.map((m) => (
-            <li key={m.id} className="flex items-center gap-2 py-2">
-              <input
-                className="input flex-1"
-                value={m.name}
-                onChange={(e) => updateMember(m.id, { name: e.target.value })}
-              />
-              <input
-                className="input flex-1"
-                value={m.role || ''}
-                placeholder="Role"
-                onChange={(e) => updateMember(m.id, { role: e.target.value })}
-              />
-              <button onClick={() => deleteMember(m.id)} className="text-ink/40 hover:text-clay">
-                <Trash2 size={16} />
-              </button>
-            </li>
-          ))}
-        </ul>
-        <form onSubmit={handleAddMember} className="flex gap-2">
-          <input placeholder="Name" className="input flex-1" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
-          <input placeholder="Role" className="input flex-1" value={newMemberRole} onChange={(e) => setNewMemberRole(e.target.value)} />
-          <button type="submit" className="bg-ink/5 hover:bg-ink/10 rounded-lg px-3">
-            <Plus size={16} />
-          </button>
-        </form>
+      <section className="card">
+        <div className="px-4 py-3.5 sm:px-6 sm:py-4 border-b border-ink/10">
+          <h2 className="font-bold">Team members</h2>
+          <p className="text-xs sm:text-sm text-ink/50 mt-0.5">Used for payroll split, not app access.</p>
+        </div>
+        <div className="p-4 sm:p-6 space-y-3">
+          {members.length > 0 && (
+            <ul className="divide-y divide-ink/10">
+              {members.map((m) => (
+                <li key={m.id} className="flex items-center gap-2 py-2">
+                  <input
+                    className="input flex-1 min-w-0"
+                    value={m.name}
+                    onChange={(e) => updateMember(m.id, { name: e.target.value })}
+                  />
+                  <input
+                    className="input flex-1 min-w-0"
+                    value={m.role || ''}
+                    placeholder="Role"
+                    onChange={(e) => updateMember(m.id, { role: e.target.value })}
+                  />
+                  <button onClick={() => deleteMember(m.id)} className="icon-btn hover:text-clay hover:bg-clay/10 shrink-0">
+                    <Trash2 size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form onSubmit={handleAddMember} className="flex gap-2">
+            <input
+              placeholder="Name"
+              className="input flex-1 min-w-0"
+              value={newMemberName}
+              onChange={(e) => setNewMemberName(e.target.value)}
+            />
+            <input
+              placeholder="Role"
+              className="input flex-1 min-w-0"
+              value={newMemberRole}
+              onChange={(e) => setNewMemberRole(e.target.value)}
+            />
+            <button type="submit" className="btn-outline shrink-0 px-3">
+              <Plus size={16} />
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   )

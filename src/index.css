@@ -4,7 +4,40 @@
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-ink/15 px-3 py-2 text-sm bg-white;
+    @apply w-full rounded-lg border border-ink/15 px-3 py-2 text-sm bg-white transition-colors;
+  }
+  .input:focus {
+    @apply border-forest/50 ring-1 ring-forest/20;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-semibold px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-forest text-white hover:bg-forest/90;
+  }
+  .btn-secondary {
+    @apply btn bg-ink text-white hover:bg-ink/90;
+  }
+  .btn-outline {
+    @apply btn border border-ink/15 text-ink hover:bg-ink/5;
+  }
+  .btn-danger {
+    @apply btn bg-clay text-white hover:bg-clay/90;
+  }
+  .icon-btn {
+    @apply p-1.5 rounded-md text-ink/40 hover:text-ink hover:bg-ink/5 transition-colors;
+  }
+  .card {
+    @apply bg-white rounded-xl shadow-sm;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-success {
+    @apply badge bg-forest/15 text-forest;
+  }
+  .badge-pending {
+    @apply badge bg-ink/10 text-ink/60;
   }
 }
 

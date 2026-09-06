@@ -10,6 +10,7 @@ import AgencyPicker from './components/AgencyPicker.jsx'
 import AgencyPasswordGate from './components/AgencyPasswordGate.jsx'
 import { useAuth } from './hooks/useAuth.js'
 import { useAgencyData } from './hooks/useAgencyData.js'
+import { supabase } from './lib/supabaseClient.js'
 
 const PAGES = {
   dashboard: DashboardPage,
@@ -22,12 +23,42 @@ const PAGES = {
 export default function App() {
   const { user, loading: authLoading } = useAuth()
 
-  // Agency id can arrive via a shared link: yoursite.com/?agency=<uuid>
+  // Agency id can arrive two ways from a shared link:
+  //   yoursite.com/?agency=<uuid>   (direct, e.g. from an older link)
+  //   yoursite.com/?i=<shortcode>   (short invite link, resolved below)
   const [agencyId, setAgencyId] = useState(
     () => new URLSearchParams(window.location.search).get('agency')
   )
+  const [resolvingInvite, setResolvingInvite] = useState(
+    () => !new URLSearchParams(window.location.search).get('agency') &&
+      !!new URLSearchParams(window.location.search).get('i')
+  )
+  const [inviteError, setInviteError] = useState(null)
   const [unlocked, setUnlocked] = useState(false)
   const [page, setPage] = useState('dashboard')
+
+  // Resolve a short invite code into a real agency id, once, on load.
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('i')
+    if (!code || agencyId) {
+      setResolvingInvite(false)
+      return
+    }
+    let cancelled = false
+    supabase
+      .rpc('resolve_invite_code', { invite_code: code })
+      .then(({ data, error }) => {
+        if (cancelled) return
+        const row = data?.[0]
+        if (error || !row) setInviteError("This invite link isn't valid anymore.")
+        else setAgencyId(row.agency_id)
+        setResolvingInvite(false)
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Keep the URL in sync so the current agency is always a shareable link,
   // and switching agencies re-locks the password gate.
@@ -35,13 +66,14 @@ export default function App() {
     const url = new URL(window.location.href)
     if (agencyId) url.searchParams.set('agency', agencyId)
     else url.searchParams.delete('agency')
+    url.searchParams.delete('i')
     window.history.replaceState({}, '', url)
     setUnlocked(false)
   }, [agencyId])
 
-  if (authLoading) return <p className="p-8 text-ink/60">Loading...</p>
+  if (authLoading || resolvingInvite) return <p className="p-8 text-ink/60">Loading...</p>
   if (!user) return <LoginPage />
-  if (!agencyId) return <AgencyPicker onSelect={setAgencyId} />
+  if (!agencyId) return <AgencyPicker onSelect={setAgencyId} inviteError={inviteError} />
   if (!unlocked) {
     return (
       <AgencyPasswordGate
@@ -67,7 +99,7 @@ function Dashboard({ agencyId, page, setPage, onSwitchAgency }) {
         studioName={data.settings?.studio_name}
         onSwitchAgency={onSwitchAgency}
       />
-      <main className="flex-1 min-w-0 p-4 md:p-8">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8">
         {data.loading ? (
           <p className="text-ink/60">Loading...</p>
         ) : data.error ? (

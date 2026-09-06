@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAgencies } from '../hooks/useAgencies.js'
 import { useAuth } from '../hooks/useAuth.js'
 
-export default function AgencyPicker({ onSelect }) {
+export default function AgencyPicker({ onSelect, inviteError }) {
   const { agencies, loading, createAgency, renameAgency, deleteAgency } = useAgencies()
   const { signOut } = useAuth()
   const [creating, setCreating] = useState(false)
@@ -33,6 +33,12 @@ export default function AgencyPicker({ onSelect }) {
             Sign out
           </button>
         </div>
+
+        {inviteError && (
+          <div className="bg-clay/10 border border-clay/30 text-clay text-sm rounded-lg p-3">
+            {inviteError}
+          </div>
+        )}
 
         {loading ? (
           <p className="text-ink/60">Loading...</p>
